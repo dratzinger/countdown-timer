@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* css reset */
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed, 
+        figure, figcaption, footer, header, hgroup, 
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure, 
+        footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+        body {
+            line-height: 1;
+        }
+        /* css reset end*/
+        
+        body {
+            font-family: sans-serif;
+        }
+        input {
+            width: 30px;
+            margin: 0 2px;
+            font-weight: bold;
+            font-size: 11pt;
+            padding: 0 auto;
+        }
+        #time {
+            font-size: 30vw;
+            margin-top: 7%;
+        }
+        #menu {
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            margin: 0 auto;
+            padding: 5px 0;
+            background: lightgrey;
+            font-size: 11pt;
+            font-weight: bold
+        }
+        
+        /* blink animation */
+        .blink {
+            color: red;
+            -webkit-animation: blink 1s linear infinite;
+            -moz-animation: blink 1s linear infinite;
+            -ms-animation: blink 1s linear infinite;
+            -o-animation: blink 1s linear infinite;
+            animation: blink 1s linear infinite;
+        }
+        @-webkit-keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 1; }
+            50.01% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        @-moz-keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 1; }
+            50.01% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        @-ms-keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 1; }
+            50.01% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        @-o-keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 1; }
+            50.01% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 1; }
+            50.01% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        /* end */
+    </style>
+</head>
+    
+<body>
+
+<center>
+    <div id="time">
+        <span id="minus"></span>
+        <span id="countdown"></span>
+    </div>
+    <div id="menu">
+        <button onclick="toggleRunning()">||</button>
+        Min:<input type="text" id="minInput" onkeydown="return detectReturnkey(event)">
+        Sec:<input type="text" id="secInput" onkeydown="return detectReturnkey(event)">
+        <button onclick="start()">></button>
+    </div>
+</center>
+
+<script>
+var seconds, count, running;
+
+function secondPassed() {
+    var minutes = Math.abs(~~(seconds/60));
+    var remainingSeconds = Math.abs(seconds % 60);
+    
+    if (remainingSeconds < 10 && remainingSeconds > -10) {
+        remainingSeconds = "0" + remainingSeconds; 
+    }
+    
+    document.getElementById('countdown').innerHTML = minutes + ":" + remainingSeconds;
+    
+    if (seconds <= 0) {
+        document.getElementById('minus').innerHTML = '-';
+        document.getElementById('time').className = 'blink';
+    } else {
+        document.getElementById('minus').innerHTML = '';
+        document.getElementById('time').className = '';
+    }
+    seconds--;
+}
+
+var running;
+function toggleRunning() {
+    if (running) {
+        clearInterval(count);
+        running = false;
+    } else {
+        clearInterval(count);
+        count = setInterval('secondPassed()', 1000);        
+        running = true;
+    }
+}
+
+function start() {
+    clearInterval(count);
+    var min = Number(document.getElementById('minInput').value);
+    var sec = Number(document.getElementById('secInput').value);
+    seconds = sec+min*60;
+    running = false;
+    toggleRunning();
+}
+
+function detectReturnkey(e) {
+    if(e.keyCode === 13){
+        start();
+    }
+}
+
+</script>
+
+</body>
+</html>
