@@ -7,8 +7,8 @@
         h1, h2, h3, h4, h5, h6, p, blockquote, pre,
         a, abbr, acronym, address, big, cite, code,
         del, dfn, em, img, ins, kbd, q, s, samp,
-        small, strike, strong, sub, sup, tt, var,
-        b, u, i, center,
+        small, strike, strong, sub, sup, tt, var, 
+        u, i, center,
         dl, dt, dd, ol, ul, li,
         fieldset, form, label, legend,
         table, caption, tbody, tfoot, thead, tr, th, td,
@@ -36,12 +36,32 @@
         body {
             font-family: sans-serif;
         }
+        p {
+            margin-top: 10px;
+        }
+        i {
+            font-style: italic;
+            font-size: 10pt;
+        }
         input {
-            width: 30px;
+            width: 35px;
             margin: 0 2px;
+            text-align: center;
             font-weight: bold;
             font-size: 11pt;
             padding: 0 auto;
+        }
+        button {
+            padding: 1px 0 0 0;
+            border-style: none;
+            background: none;
+            vertical-align: middle;
+        }
+        .hidden {
+            visibility: hidden;
+        }
+        #endInput {
+            width: 80px
         }
         #time {
             font-size: 30vw;
@@ -52,10 +72,20 @@
             position: absolute;
             bottom: 0;
             margin: 0 auto;
-            padding: 5px 0;
+            padding: 7px 0 3px 0;
             background: lightgrey;
-            font-size: 11pt;
-            font-weight: bold
+            font-size: 12pt;
+            font-weight: bold;
+        }
+        #help {
+            position: relative;
+            top: 20px;
+            width: 250px;
+            padding: 15px;
+            border: 1px solid black;
+            border-radius: 24px;
+            background: lightgrey;
+            
         }
         
         /* blink animation */
@@ -99,73 +129,184 @@
         }
         /* end */
     </style>
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
     
-<body>
+<body onkeydown="return detectKey(event)">
 
-<center>
+<center class="container">
     <div id="time">
         <span id="minus"></span>
         <span id="countdown"></span>
     </div>
+    
+    <div id="help" class="hidden">
+        <b>Countdown Timer</b>
+        <p>
+            Modes: <br>
+            <li>count down minutes/seconds</li>
+            <li>count towards end time<br>(24h format)</li>
+            <br>            
+            <i>focus on input field switches modes<br></i>
+        </p>
+        <!--<p><i>last active input switches modes</i></p>-->
+        <p>
+            Hotkeys: <br>
+            <i>
+            enter - start <br>
+            space - pause <br>
+            escape - toggle menu <br>
+            </i>
+        </p>
+        
+        
+    </div>
+    
     <div id="menu">
-        <button onclick="toggleRunning()">||</button>
-        Min:<input type="text" id="minInput" onkeydown="return detectReturnkey(event)">
-        Sec:<input type="text" id="secInput" onkeydown="return detectReturnkey(event)">
-        <button onclick="start()">></button>
+        <label for="minInput">Min</label>
+        <input type="text" id="minInput" onfocus="setActiveInput('Minutes')" autofocus>
+        <label for="secInput">Sec</label>
+        <input type="text" id="secInput" onfocus="setActiveInput('Minutes')">
+        <span class="hidden">_</span>
+        <button onclick="toggleHelp()"><i class="material-icons">&#xE8FD;</i></button>
+        <button onclick="toggleRunning()"><i class="material-icons">&#xE036;</i></button>
+        <button onclick="start()"><i class="material-icons">&#xE039;</i></button>
+        <span class="hidden">_</span>
+        <label for="endInput">End</label>
+        <input type="text" id="endInput" onfocus="setActiveInput('Endtime')" oninput="addCol()" maxlength="5">
+        <!-- <input type="checkbox" title="Hotkeys enabled"> -->        
     </div>
 </center>
 
 <script>
-var seconds, count, running;
+    var seconds, count, activeInput;
+    var timerSet = false;
+    var running = false;
 
-function secondPassed() {
-    var minutes = Math.abs(~~(seconds/60));
-    var remainingSeconds = Math.abs(seconds % 60);
-    
-    if (remainingSeconds < 10 && remainingSeconds > -10) {
-        remainingSeconds = "0" + remainingSeconds; 
-    }
-    
-    document.getElementById('countdown').innerHTML = minutes + ":" + remainingSeconds;
-    
-    if (seconds <= 0) {
-        document.getElementById('minus').innerHTML = '-';
-        document.getElementById('time').className = 'blink';
-    } else {
-        document.getElementById('minus').innerHTML = '';
-        document.getElementById('time').className = '';
-    }
-    seconds--;
-}
+    function secondPassed() {
+        var minutes = Math.abs(~~(seconds/60));
+        var remainingSeconds = Math.abs(seconds % 60);
 
-var running;
-function toggleRunning() {
-    if (running) {
+        if (remainingSeconds < 10 && remainingSeconds > -10) {
+            remainingSeconds = "0" + remainingSeconds; 
+        }
+
+        document.getElementById('countdown').innerHTML = minutes + ":" + remainingSeconds;
+
+        if (seconds <= 0) {
+            document.getElementById('minus').innerHTML = '-';
+            document.getElementById('time').className = 'blink';
+        } else {
+            document.getElementById('minus').innerHTML = '';
+            document.getElementById('time').className = '';
+        }
+        seconds--;
+    }
+    function toggleRunning() {
+        if (timerSet) {
+            if (running) {
+                clearInterval(count);
+                running = false;
+            } else {
+                clearInterval(count);
+                count = setInterval('secondPassed()', 1000);        
+                running = true;
+            }
+        }
+    }
+
+    function start() {
         clearInterval(count);
+        
+        if (activeInput == 'Endtime') {
+            var hrs = 0;
+            var min = 0;
+            var now = new Date();
+            var input = document.getElementById('endInput').value;
+            
+            if (input.length<=0)
+            {}//return; // cancel on missing input
+            else if (input.length==1 || input.length==2) {
+                hrs = Number(input);
+            } else {
+                if (input.indexOf(':')>=0) {
+                    // normal case - colon separated
+                    input = input.split(':');
+                    hrs = Number(input[0]);
+                    min = Number(input[1]);
+                } else {
+                    // if time is pasted colon might be missing
+                    hrs = Number(input.substr(0,2));
+                    min = Number(input.substr(2,2));                    
+                }
+            }
+            
+            var end;
+            if (hrs<now.getHours())
+                end = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, hrs, min, 0, 0)
+            else
+                end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hrs, min, 0, 0)
+            
+            var milliSec = end-now;
+            seconds = Math.round(milliSec/1000);
+            
+        } else {
+            min = Number(document.getElementById('minInput').value);
+            sec = Number(document.getElementById('secInput').value);
+            seconds = sec+min*60;
+        }
+        
+        timerSet = true;
         running = false;
-    } else {
-        clearInterval(count);
-        count = setInterval('secondPassed()', 1000);        
-        running = true;
+        toggleRunning();
     }
-}
-
-function start() {
-    clearInterval(count);
-    var min = Number(document.getElementById('minInput').value);
-    var sec = Number(document.getElementById('secInput').value);
-    seconds = sec+min*60;
-    running = false;
-    toggleRunning();
-}
-
-function detectReturnkey(e) {
-    if(e.keyCode === 13){
-        start();
+    
+    function toggleMenu() {
+        document.getElementById('menu').classList.toggle('hidden');
+        
+        if (!document.getElementById('help').classList.contains('hidden'))
+            toggleHelp();
     }
-}
+    
+    function toggleHelp() {
+        document.getElementById('help').classList.toggle('hidden');        
+    }
 
+    function addCol() {
+        var input = document.getElementById('endInput');
+        var length = input.value.length;
+        
+        if (length == 2) {
+            if (input.value.indexOf(':')<0)
+                input.value += ':';
+        }
+    }
+    
+    function setActiveInput(name) {
+        activeInput = name;
+    }
+
+    function detectKey(e) {        
+        switch(e.keyCode) {
+            case 13: // Enter
+                start();
+                return false;
+                break;
+                
+            case 32: // Space
+                toggleRunning();
+                return false;
+                break;
+                
+            case 27: // Escape
+                toggleMenu();
+                return false;
+                break;                
+                
+            default: break;
+        }
+    }
 </script>
 
 </body>
