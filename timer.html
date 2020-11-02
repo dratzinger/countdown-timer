@@ -168,7 +168,7 @@
         <span id="countdown"></span>
     </div>
 
-    <div id="help" class="hidden">
+    <div id="help">
         <b>Countdown Timer</b>
         <p>
             Modes: <br>
@@ -184,10 +184,15 @@
                 enter - start <br>
                 space - pause <br>
                 escape - toggle menu <br>
+                h - toggle help <br>
             </i>
         </p>
-
-
+        <p>
+            <span id="github">
+				View this project on 
+				<a href=https://github.com/dratzinger/countdown-timer target="_blank">GitHub</a>
+			</span>
+        </p>
     </div>
 
     <div id="menu">
@@ -328,6 +333,11 @@
 
             case 27: // Escape
                 toggleMenu();
+                return false;
+                break;
+				
+            case 72: // H
+                toggleHelp();
                 return false;
                 break;
 
